@@ -181,6 +181,8 @@ my %CONFIG = (
     lower_cache     => 1000,
     lower_cache_min => 3,
 
+    cache_dir => 0,
+
     video_players => {
                       mplayer => {
                                   cmd     => get_mplayer(),
@@ -202,6 +204,7 @@ my %CONFIG = (
                               fs      => q{--fullscreen},
                               arg     => q{--really-quiet},
                               novideo => q{--no-video},
+                              cache_file => q{--cache-file='%s'},
                              },
                      },
 
@@ -3101,9 +3104,37 @@ sub get_player_command {
            ? sprintf($opt{video_players}{$opt{video_player_selected}}{srt}, $streaming->{srt_file})
            : ()
           ),
+          (
+           $streaming->{cache_file}
+           ? sprintf($opt{video_players}{$opt{video_player_selected}}{cache_file}, $streaming->{cache_file})
+           : ()
+          ),
           grep({ defined($_) and /\S/ } values %MPLAYER)
          )
         );
+}
+
+sub setup_cache_file {
+    my ($streaming, $id) = @_;
+
+    return if (not $opt{cache_dir});
+
+    if (not -d $opt{cache_dir}) {
+        require File::Path;
+        File::Path::make_path($opt{cache_dir}, {error => \my $err});
+        if (@$err) {
+            warn colored("\n[!] Can't create directory '$opt{cache_dir}': $!", 'bold red') . "\n";
+            return;
+        }
+    }
+
+    $streaming->{cache_file} = sprintf("%s/%s", $CONFIG{cache_dir}, $id);
+}
+
+sub remove_cache_file {
+    my ($streaming) = @_;
+
+    unlink $streaming->{cache_file} if ($streaming->{cache_file});
 }
 
 sub play_videos {
@@ -3143,10 +3174,13 @@ sub play_videos {
             push @streaming_urls, $streaming;
         }
         else {
+            setup_cache_file($streaming, $video->{videoID});
+
             my $command = get_player_command($streaming);
             say $command if $yv_obj->get_debug;
 
             system join(q{ }, $command, quotemeta($streaming->{streaming}{url}));
+            remove_cache_file($streaming);
             if ($? and $? != 512) {
                 return;
             }
@@ -3156,10 +3190,14 @@ sub play_videos {
     if ($opt{combine_multiple_videos} && @streaming_urls) {
         my $streaming = $streaming_urls[0];
 
+        setup_cache_file($streaming, "$$");
+
         my $command = get_player_command($streaming);
         say $command if $yv_obj->get_debug;
 
         system join(q{ }, $command, map { quotemeta($_->{streaming}{url}) } @streaming_urls);
+        remove_cache_file($streaming);
+
         return if $?;
     }
 
