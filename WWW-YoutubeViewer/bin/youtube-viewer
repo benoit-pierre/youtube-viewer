@@ -202,7 +202,7 @@ my %CONFIG = (
                               cmd     => q{mpv},
                               srt     => q{--sub-file '%s'},
                               fs      => q{--fullscreen},
-                              arg     => q{--really-quiet},
+                              arg     => q{--really-quiet --profile=youtube},
                               novideo => q{--no-video},
                               cache_file => q{--cache-file='%s'},
                              },
