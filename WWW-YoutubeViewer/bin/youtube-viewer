@@ -206,6 +206,14 @@ my %CONFIG = (
                               novideo => q{--no-video},
                               cache_file => q{--cache-file='%s'},
                              },
+                      'mp-play' => {
+                                    cmd     => q{mp-play},
+                                    srt     => q{--option=--sub='%s'},
+                                    fs      => q{--option=--fullscreen},
+                                    arg     => q{--player=mpv --profile=youtube},
+                                    novideo => q{--option=--no-video},
+                                    cache_file => q{--option=--cache-file='%s'},
+                                   },
                      },
 
     video_player_selected => (
