@@ -208,7 +208,7 @@ my %CONFIG = (
                              },
                       'mp-play' => {
                                     cmd     => q{mp-play},
-                                    srt     => q{--option=--sub='%s'},
+                                    srt     => q{--option=--sub-file='%s'},
                                     fs      => q{--option=--fullscreen},
                                     arg     => q{--player=mpv --profile=youtube},
                                     novideo => q{--option=--no-video},
